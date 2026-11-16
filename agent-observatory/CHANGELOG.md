@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Session rows show a muted workspace/project header above the agent title. Priority sections and row ordering are unchanged, and nested subagents inherit their parent row's workspace context without repeating the header.
+
 ## 2.18.0 · 2026-10-28
 
 **Looping and stuck turns (new, after Cindy's loop guard)**

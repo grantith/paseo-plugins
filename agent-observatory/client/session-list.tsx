@@ -102,12 +102,14 @@ export const SessionRow = memo(function SessionRow({ item, theme, compact, selec
   const checkout = agent.branch ?? (agent.checkoutKind === "worktree" ? agent.worktreeName : null);
   // Time outranks provider/model: when the line truncates, the model goes first.
   const time = trailing.pill ? timeLabel : null;
-  const meta = depth === 0 ? [agent.projectName, checkout, time, providerLine(agent)] : [time, providerLine(agent)];
+  const meta = depth === 0 ? [checkout, time, providerLine(agent)] : [time, providerLine(agent)];
+  const workspace = agent.workspaceName || agent.workspaceId || t("coreAgentDetail.noWorkspaceAssigned");
+  const viewLabel = t("secondarySessionList.view", { value1: agent.title, value2: stateName(agent), value3: marked ? t("secondarySessionList.awaitingArchive") : "" });
   const settled = phase === "closed" || phase === "canceled" || phase === "snoozed";
   return <View style={depth ? { marginLeft: 16 + (depth - 1) * 22, paddingLeft: 6, borderLeftWidth: hairline, borderLeftColor: colors.border } : undefined}>
     {/* The row and its chip share a box of their own, so the chip sits on the row's last line, never on the 子 Agent toggle. */}
     <View>
-      <Pressable accessibilityRole="button" accessibilityLabel={t("secondarySessionList.view", { value1: agent.title, value2: stateName(agent), value3: marked ? t("secondarySessionList.awaitingArchive") : "" })} accessibilityState={{ selected }} {...aria({ selected })} onPress={() => onSelect(agent.id)}
+      <Pressable accessibilityRole="button" accessibilityLabel={depth === 0 ? `${viewLabel}, ${t("coreAgentDetail.workspace")}: ${workspace}` : viewLabel} accessibilityState={{ selected }} {...aria({ selected })} onPress={() => onSelect(agent.id)}
         style={state => ({ flexDirection: "row", alignItems: "flex-start", gap: 10, paddingVertical: 10, paddingLeft: space.md, paddingRight: space.md, borderRadius: radius.md, opacity: row.context ? 0.62 : 1,
           backgroundColor: selected && !marked ? colors.surface2 : state.pressed || (state as { hovered?: boolean }).hovered ? colors.surface1 : wash ?? "transparent" })}>
         <Flash count={changes} color={tint(color, tintAlpha(theme) + 0.1)} radius={radius.md} />
@@ -117,6 +119,12 @@ export const SessionRow = memo(function SessionRow({ item, theme, compact, selec
           <Pop count={changes} size={16}><StatusGlyph theme={theme} phase={phase} /></Pop>
         </View>
         <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
+          {depth === 0 ? <View style={{ flexDirection: "row", alignItems: "center", gap: 5, minWidth: 0 }}>
+            <HueDot theme={theme} hue={hueFor(agent.projectName)} size={7} />
+            <Text numberOfLines={2} style={{ flex: 1, minWidth: 0, color: colors.foregroundMuted, fontSize: fontSize.meta, lineHeight: 17, fontWeight: "600" }}>
+              {workspace}{agent.projectName && agent.projectName !== workspace ? ` · ${agent.projectName}` : ""}
+            </Text>
+          </View> : null}
           <View style={{ flexDirection: "row", alignItems: "flex-start", gap: space.sm }}>
             <Text numberOfLines={2} style={{ flex: 1, color: settled ? colors.foregroundMuted : colors.foreground, fontSize: fontSize.body, lineHeight: 20, fontWeight: active ? "600" : "500" }}>{agent.title || t("secondarySessionList.unnamedAgent")}</Text>
             <View style={{ minHeight: 20, justifyContent: "center", alignItems: "flex-end" }}>{trailing.node}</View>
@@ -138,7 +146,6 @@ export const SessionRow = memo(function SessionRow({ item, theme, compact, selec
             {agent.labels["paseo.schedule-id"] ? <ScheduleBadge theme={theme} /> : null}
             {delegatedFrom !== null ? <DelegatedChip theme={theme} host={delegatedFrom} /> : null}
             <View style={{ flex: 1, minWidth: 120, flexDirection: "row", alignItems: "center", gap: 5 }}>
-              {depth === 0 ? <HueDot theme={theme} hue={hueFor(agent.projectName)} size={7} /> : null}
               <View style={{ flex: 1, minWidth: 0 }}><MetaLine theme={theme} parts={[...meta, row.node.cycleBroken ? t("secondarySessionList.aCycleInTheParentRelationship") : null]} /></View>
             </View>
           </View>
